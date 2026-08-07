@@ -210,6 +210,7 @@ int main(){
             clientPanel(users[1], resources[0]);
             clientChoiceLog();
             int choiceUser = clientChoiceLog();
+            
         }
         else if(choiceUser == 2){
             clearScreen();
