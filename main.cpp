@@ -3,7 +3,7 @@
 #include <vector>
 #include <limits>
 #include <stdlib.h>
-#include <time.h>
+#include <iomanip>
 using namespace std;
 
 enum class Menu{
@@ -105,7 +105,7 @@ class Resource{
         
         void setIsActive(bool active){isActive = active;}
         void setPricePerSlot(double newPrice){
-            if(pricePerSlot >= 0) pricePerSlot = newPrice;
+            if(newPrice >= 0) pricePerSlot = newPrice;
         }
 };
 
@@ -140,7 +140,7 @@ int userChoiceLog(){
     int choiceUser;
     while (true) {
         cout << "wybierz opcje > ";
-        if (cin >> choiceUser && choiceUser >= 1 && choiceUser <= 3) {
+        if (cin >> choiceUser && choiceUser >= 0 && choiceUser <= 2) {
             return choiceUser;
         }
         cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
@@ -171,26 +171,76 @@ void clientPanel(const User &client, const Resource &res){
     cout << "==================================================\n"
          << "   PANEL KLIENTA | Zalogowany: " << client.getFullNameUser() << " | ID: " << client.getIdUser() << '\n'
          << "==================================================" << "\n\n";
-    
-    cout << "   --- MOJE KONTO ---\n\n";
+
+    cout << "   --- STREFA REZERWACJI ---\n";
+    cout << "   [1] Przegladaj dostepne zasoby i cennik\n";
+    cout << "   [2] Zloz nowa rezeracje\n\n";
+
+    cout << "   --- MOJE KONTO ---\n";
     cout << "   [3] Moje akutalne rezeracje\n";
     cout << "   [4] Anuluj rezeracje\n\n";
-    cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
 
-    //Wybierz opcję >
+    cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
+    cout << "==================================================\n";
+
 }
 
 int clientChoiceLog(){
-    int choiceUser;
+    int clientChoiceUser;
     while (true) {
         cout << "wybierz opcje > ";
-        if (cin >> choiceUser && choiceUser >= 3 && choiceUser <= 4) {
-            return choiceUser;
+        if (cin >> clientChoiceUser && clientChoiceUser >= 0 && clientChoiceUser <= 4) {
+            return clientChoiceUser;
         }
         cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
+}
+
+void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive = false){
+    cout << "==============================================================================\n"
+         << "                           LISTA ZASOBOW I CENNIK                             \n"
+         << "==============================================================================\n";
+
+    if(resources.empty()){
+        cout << "  Brak zarejestrowanych zasobów w systemie.\n";
+        cout << "==============================================================================\n";
+        return;
+    }
+
+    cout << left
+        << setw(7)  << "ID"
+        << setw(30) << "Nazwa Zasobow"
+        << setw(14) << "Pojemnosc"
+        << setw(15) << "Cena/godz."
+        << "Status" << "\n";  
+
+    cout << string(78, '-') << "\n";
+    for(const auto& res : resources){
+        if(isActive && !res.getIsActive()){
+            continue;
+        }
+    
+
+    string capStr = to_string(res.getCapacity()) + " os.";
+    cout << left
+        <<setw(7)  << res.getIdResource()
+        <<setw(30) << res.getNameResource()
+        <<setw(14) << capStr
+        <<setw(15) << res.getPricePerSlot();
+    
+    cout << left
+        << (res.getIsActive() ? "[Dostepny]" : "[Niedotepny]") << "\n"; 
+    }
+    cout << "==============================================================================\n";
+}
+
+void newReservation(const vector<Resource>& resources){
+    cout << "==================================================\n"
+         << "               ZLOZ NOWA REZERACJE                \n"
+         << "==================================================\n";
+    
 }
 
 int main(){
@@ -199,22 +249,47 @@ int main(){
     users.push_back(User("Jan Kowalski", "+48 111 222 333", Role::ADMIN));
     users.push_back(User("Anna Nowak", "+48 999 888 777", Role::CLIENT));
     resources.push_back(Resource("Sala Konferencyjna A", 20, 50.0));
-
     while(true){
         clearScreen();
         header();
         logOption();
         int choiceUser = userChoiceLog();
         if(choiceUser == 1){
-            clearScreen();
-            clientPanel(users[1], resources[0]);
-            clientChoiceLog();
-            int choiceUser = clientChoiceLog();
-            
+            while(true){
+                clearScreen();
+                clientPanel(users[1], resources[0]);
+                int clientChoiceUser = clientChoiceLog();
+                if(clientChoiceUser == 0){
+                    break;
+                }
+                switch(clientChoiceUser){
+                    case 1:
+                        int backToClientPanel;
+                        clearScreen();
+                        displayResourcesAndPricing(resources, false);
+                        cout << "[0] Powrot > "; cin >> backToClientPanel;
+                        if(backToClientPanel == 0){
+                            clientPanel(users[1], resources[0]);
+                        }
+                        break;
+                    case 2:
+                        cout << "\nZloz nowa rezerwacje...\n";
+                        break;
+                    case 3:
+                        cout << "\nTwoje aktualne rezerwacje...\n";
+                        break;
+                    case 4:
+                        cout << "\nAnuluj rezerwacje...\n";
+                        break;
+                }
+            }
         }
         else if(choiceUser == 2){
             clearScreen();
             daneAdmin(users[0], users[1], resources[0]);
+            cout << "\nNacisnij Enter, aby wrocic do menu";
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin.get();
         }
         else{
             clearScreen();
