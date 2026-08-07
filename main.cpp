@@ -236,16 +236,19 @@ void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive
     cout << "==============================================================================\n";
 }
 
-void newReservation(const vector<Resource>& resources){
+void newReservation(const User& users, const vector<Resource>& resources, vector<Reservation>* reservations){
     cout << "==================================================\n"
          << "               ZLOZ NOWA REZERACJE                \n"
          << "==================================================\n";
+
+    
     
 }
 
 int main(){
     vector<User> users;
     vector<Resource> resources;
+    vector<Reservation> reservations;
     users.push_back(User("Jan Kowalski", "+48 111 222 333", Role::ADMIN));
     users.push_back(User("Anna Nowak", "+48 999 888 777", Role::CLIENT));
     resources.push_back(Resource("Sala Konferencyjna A", 20, 50.0));
