@@ -236,10 +236,73 @@ void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive
     cout << "==============================================================================\n";
 }
 
-void newReservation(const User& users, const vector<Resource>& resources, vector<Reservation>* reservations){
+time_t makeTimestamp(int year, int month, int day, int hour) {
+    struct tm timeInfo = {0};
+    timeInfo.tm_year = year - 1900;
+    timeInfo.tm_mon = month - 1;
+    timeInfo.tm_mday = day;
+    timeInfo.tm_hour = hour;
+    timeInfo.tm_min = 0;
+    timeInfo.tm_sec = 0;
+    timeInfo.tm_isdst = -1;
+    return mktime(&timeInfo);
+}
+
+void newReservation(const User& user, const vector<Resource>& resources, vector<Reservation>& reservations){
     cout << "==================================================\n"
          << "               ZLOZ NOWA REZERACJE                \n"
          << "==================================================\n";
+
+    unsigned int resID;
+    cout << "Podaj id > ";
+    cin >> resID;
+
+    const Resource* targetResource  = nullptr;
+    for(const auto& r : resources){
+        if(r.getIdResource() == resID && r.getIsActive()){
+            targetResource = &r;
+            break;
+        }
+    }
+    if(!targetResource){
+        cout << "Blad nie ma lub nie jest dostepny obecnie: " << resID << endl;
+        return;
+    }
+
+    int Year, Month, Day, startHour, endHour;
+    unsigned int seat;
+    cout << "Podaj date od-do Dzien - Miesiac - Rok> ";
+    cin >> Day >> Month >> Year;
+    
+    cout << "Podaj Godzine poczatkowa > ";  cin >> startHour;
+    cout << "Podaj godzine zakonczenia > "; cin >> endHour;
+
+    if (endHour <= startHour) {
+        cout << "\n[!] Błąd: Godzina zakończenia musi być późniejsza niż rozpoczęcia.\n";
+        return;
+    }
+
+    cout << "Podaj liczbe miejsc do zarezerwowania (maksylanie: " << targetResource->getCapacity() << ") : ";
+    cin >> seat;
+
+    if(seat == 0 || seat > targetResource->getCapacity()){
+        cout << "Niepoprawna ilosc miejsc\n";
+        return;
+    }
+
+    time_t startTs = makeTimestamp(Year, Month, Day, startHour);
+    time_t endTs   = makeTimestamp(Year, Month, Day, endHour);
+
+    Reservation newRes(user.getIdUser(), targetResource->getIdResource(),
+                     startTs, endTs, seat, targetResource->getPricePerSlot());
+    reservations.push_back(newRes);
+
+    cout << "==================================================\n"
+         << "           TWORZENIE NOWEJ REZERWACJI             \n"
+         << "==================================================\n";
+    
+    // cout << "   Zasób:      " << resources.getNameResource() << "\n";
+
 }
 
 int main(){
@@ -273,7 +336,7 @@ int main(){
                         }
                         break;
                     case 2:
-                        cout << "\nZloz nowa rezerwacje...\n";
+                        newReservation(users[1], resources, reservations);
                         break;
                     case 3:
                         cout << "\nTwoje aktualne rezerwacje...\n";
