@@ -223,15 +223,15 @@ void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive
         }
     
 
-    string capStr = to_string(res.getCapacity()) + " os.";
-    cout << left
-        <<setw(7)  << res.getIdResource()
-        <<setw(30) << res.getNameResource()
-        <<setw(14) << capStr
-        <<setw(15) << res.getPricePerSlot();
-    
-    cout << left
-        << (res.getIsActive() ? "[Dostepny]" : "[Niedotepny]") << "\n"; 
+        string capStr = to_string(res.getCapacity()) + " os.";
+        cout << left
+            <<setw(7)  << res.getIdResource()
+            <<setw(30) << res.getNameResource()
+            <<setw(14) << capStr
+            <<setw(15) << res.getPricePerSlot();
+        
+        cout << left
+            << (res.getIsActive() ? "[Dostepny]" : "[Niedotepny]") << "\n"; 
     }
     cout << "==============================================================================\n";
 }
@@ -240,9 +240,6 @@ void newReservation(const User& users, const vector<Resource>& resources, vector
     cout << "==================================================\n"
          << "               ZLOZ NOWA REZERACJE                \n"
          << "==================================================\n";
-
-    
-    
 }
 
 int main(){
