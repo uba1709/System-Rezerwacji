@@ -291,23 +291,26 @@ void displayUserReservations(const vector<Reservation>& reservations, const vect
          << "==================================================\n";
 
     bool hasReservation = false;
-    for (const auto& reservation : reservations) {
-        if (reservation.getUserId() != userId) continue;
+    for(const auto& res : reservations){
+        if(res.getUserId() != userId) continue;
         hasReservation = true;
-        const Resource* resource = findResourceById(resources, reservation.getResourceId());
-        cout << "ID rezerwacji: " << reservation.getId() << "\n"
-             << "Zasób: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
-             << "Data pocz.: " << formatTimestamp(reservation.getStartTimestamp()) << "\n"
-             << "Data zak.: " << formatTimestamp(reservation.getEndTimestamp()) << "\n"
-             << "Miejsca: " << reservation.getReservedSeats() << "\n"
-             << "Status: " << reservationStatusToString(reservation.getStatus()) << "\n"
-             << "Cena: " << reservation.getTotalPrice() << " PLN\n"
-             << "--------------------------------------------------\n";
+        const Resource* resource = findResourceById(resources, res.getResourceId());
+        cout << "   ID rezerwacji: " << res.getId() << "\n"
+             << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
+             << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n"
+             << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n"
+             << "   Miejsce: " << res.getReservedSeats() << "\n"
+             << "   Status: " << reservationStatusToString(res.getStatus()) << "\n" 
+             << "   Cena: " << res.getTotalPrice() <<  "\n" 
+            << "--------------------------------------------------\n";
+    }
+    if(!hasReservation){
+        cout << "Brak aktywnych rezerwacji dla Twojego konta.\n";
+         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
     }
 
-    if (!hasReservation) {
-        cout << "Brak aktywnych rezerwacji dla Twojego konta.\n";
-    }
+    
     cout << "Nacisnij Enter, aby kontynuowac...";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
