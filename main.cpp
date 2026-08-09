@@ -245,18 +245,84 @@ time_t makeTimestamp(int year, int month, int day, int hour) {
     timeInfo.tm_min = 0;
     timeInfo.tm_sec = 0;
     timeInfo.tm_isdst = -1;
-    return mktime(&timeInfo);
+
+    time_t timestamp = mktime(&timeInfo);
+    if (timestamp == -1 ||
+        timeInfo.tm_year != year - 1900 ||
+        timeInfo.tm_mon != month - 1 ||
+        timeInfo.tm_mday != day ||
+        timeInfo.tm_hour != hour) {
+        return -1;
+    }
+    return timestamp;
+}
+
+string formatTimestamp(time_t timestamp) {
+    struct tm *timeInfo = localtime(&timestamp);
+    if (!timeInfo) return "n/a";
+    char buffer[64];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", timeInfo);
+    return string(buffer);
+}
+
+string reservationStatusToString(ReservationStatus status) {
+    switch(status) {
+        case ReservationStatus::PENDING: return "PENDING";
+        case ReservationStatus::CONFIRMED: return "CONFIRMED";
+        case ReservationStatus::CANCELLED: return "CANCELLED";
+        case ReservationStatus::COMPLETED: return "COMPLETED";
+        default: return "UNKNOWN";
+    }
+}
+
+const Resource* findResourceById(const vector<Resource>& resources, unsigned int resourceId) {
+    for (const auto& resource : resources) {
+        if (resource.getIdResource() == resourceId) {
+            return &resource;
+        }
+    }
+    return nullptr;
+}
+
+void displayUserReservations(const vector<Reservation>& reservations, const vector<Resource>& resources, unsigned int userId) {
+    clearScreen();
+    cout << "==================================================\n"
+         << "          TWOJE AKTUALNE REZERWACJE              \n"
+         << "==================================================\n";
+
+    bool hasReservation = false;
+    for (const auto& reservation : reservations) {
+        if (reservation.getUserId() != userId) continue;
+        hasReservation = true;
+        const Resource* resource = findResourceById(resources, reservation.getResourceId());
+        cout << "ID rezerwacji: " << reservation.getId() << "\n"
+             << "Zasób: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
+             << "Data pocz.: " << formatTimestamp(reservation.getStartTimestamp()) << "\n"
+             << "Data zak.: " << formatTimestamp(reservation.getEndTimestamp()) << "\n"
+             << "Miejsca: " << reservation.getReservedSeats() << "\n"
+             << "Status: " << reservationStatusToString(reservation.getStatus()) << "\n"
+             << "Cena: " << reservation.getTotalPrice() << " PLN\n"
+             << "--------------------------------------------------\n";
+    }
+
+    if (!hasReservation) {
+        cout << "Brak aktywnych rezerwacji dla Twojego konta.\n";
+    }
+    cout << "Nacisnij Enter, aby kontynuowac...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
 }
 
 void newReservation(const User& user, const vector<Resource>& resources, vector<Reservation>& reservations){
-    cout << "==================================================\n"
-         << "               ZLOZ NOWA REZERACJE                \n"
-         << "==================================================\n";
-
     unsigned int resID;
+    cout << "==================================================\n"
+         << "           TWORZENIE NOWEJ REZERWACJI             \n"
+         << "==================================================\n";
+    
     cout << "Podaj id > ";
     cin >> resID;
-
+    clearScreen();
+    cout << string(78, '-') << "\n";
     const Resource* targetResource  = nullptr;
     for(const auto& r : resources){
         if(r.getIdResource() == resID && r.getIsActive()){
@@ -265,43 +331,53 @@ void newReservation(const User& user, const vector<Resource>& resources, vector<
         }
     }
     if(!targetResource){
+        clearScreen();
         cout << "Blad nie ma lub nie jest dostepny obecnie: " << resID << endl;
         return;
     }
 
     int Year, Month, Day, startHour, endHour;
     unsigned int seat;
-    cout << "Podaj date od-do Dzien - Miesiac - Rok> ";
+    clearScreen();
+    cout << "Podaj date od-do Dzien - Miesiac - Rok> \n";
+    cout << string(78, '-') << "\n";
     cin >> Day >> Month >> Year;
     
+    clearScreen();
     cout << "Podaj Godzine poczatkowa > ";  cin >> startHour;
     cout << "Podaj godzine zakonczenia > "; cin >> endHour;
-
+        cout << string(78, '-') << "\n";
     if (endHour <= startHour) {
+        clearScreen();
         cout << "\n[!] Błąd: Godzina zakończenia musi być późniejsza niż rozpoczęcia.\n";
         return;
     }
 
+    clearScreen();
     cout << "Podaj liczbe miejsc do zarezerwowania (maksylanie: " << targetResource->getCapacity() << ") : ";
     cin >> seat;
-
+    cout << string(78, '-') << "\n";
     if(seat == 0 || seat > targetResource->getCapacity()){
+        clearScreen();
         cout << "Niepoprawna ilosc miejsc\n";
         return;
     }
 
     time_t startTs = makeTimestamp(Year, Month, Day, startHour);
     time_t endTs   = makeTimestamp(Year, Month, Day, endHour);
+    if(startTs == -1 || endTs == -1){
+        clearScreen();
+        cout << "Niepoprawna data\n";
+        return;
+    }
 
     Reservation newRes(user.getIdUser(), targetResource->getIdResource(),
-                     startTs, endTs, seat, targetResource->getPricePerSlot());
+                 startTs, endTs, seat, targetResource->getPricePerSlot());
     reservations.push_back(newRes);
-
-    cout << "==================================================\n"
-         << "           TWORZENIE NOWEJ REZERWACJI             \n"
-         << "==================================================\n";
-    
-    // cout << "   Zasób:      " << resources.getNameResource() << "\n";
+    cout << "Udalo sie\n";
+    cout << "Nacisnij Enter, aby kontynuowac...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
 
 }
 
@@ -327,19 +403,22 @@ int main(){
                 }
                 switch(clientChoiceUser){
                     case 1:
-                        int backToClientPanel;
-                        clearScreen();
-                        displayResourcesAndPricing(resources, false);
-                        cout << "[0] Powrot > "; cin >> backToClientPanel;
-                        if(backToClientPanel == 0){
-                            clientPanel(users[1], resources[0]);
+                        {
+                            int backToClientPanel;
+                            clearScreen();
+                            displayResourcesAndPricing(resources, false);
+                            cout << "[0] Powrot > "; cin >> backToClientPanel;
+                            if(backToClientPanel == 0){
+                                clientPanel(users[1], resources[0]);
+                            }
                         }
                         break;
                     case 2:
+                        clearScreen();
                         newReservation(users[1], resources, reservations);
                         break;
                     case 3:
-                        cout << "\nTwoje aktualne rezerwacje...\n";
+                        displayUserReservations(reservations, resources, users[1].getIdUser());
                         break;
                     case 4:
                         cout << "\nAnuluj rezerwacje...\n";
