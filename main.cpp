@@ -359,7 +359,7 @@ void newReservation(const User& user, const vector<Resource>& resources, vector<
     clearScreen();
     cout << "Podaj liczbe miejsc do zarezerwowania (maksylanie: " << targetResource->getCapacity() << ") : ";
     cin >> seat;
-    cout << string(78, '-') << "\n";
+    cout << string(50, '-') << "\n";
     if(seat == 0 || seat > targetResource->getCapacity()){
         clearScreen();
         cout << "Niepoprawna ilosc miejsc\n";
@@ -376,9 +376,19 @@ void newReservation(const User& user, const vector<Resource>& resources, vector<
 
     Reservation newRes(user.getIdUser(), targetResource->getIdResource(),
                  startTs, endTs, seat, targetResource->getPricePerSlot());
+
+    clearScreen();
+    cout << "==================================================\n"
+         << "           TWORZENIE NOWEJ REZERWACJI             \n"
+         << "==================================================\n";
+    cout << "   Zasób:        Sala Konferencyjna A\n"
+         << "   Termin:      " << Day << " "  << Month << " " << Year << "\n"
+         << "   Miejsca:     " << seat << "\n"
+         << "   Stawka:      50.00zl\n";
+    cout << string(50, '-') << "\n";
+    cout << "   LACZNY KOSZT:   " << newRes.getTotalPrice() << "\n";
+
     reservations.push_back(newRes);
-    cout << "Udalo sie\n";
-    cout << "Nacisnij Enter, aby kontynuowac...";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
 
