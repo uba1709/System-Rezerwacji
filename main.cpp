@@ -113,6 +113,7 @@ unsigned int Reservation::nextAutoIncrementId = 1;
 unsigned int User::nextAutoIncrementId        = 1;
 unsigned int Resource::nextAutoIncrementId    = 1;
 
+//Czyszczenie terminala 
 void clearScreen() {
     #if defined(_WIN32) || defined(_WIN64)
         std::system("cls");
@@ -148,6 +149,7 @@ int userChoiceLog(){
     }
 }
 
+//Funkcje admina
 void adminPanel(const User &admin, const Resource &res){
      cout << "==================================================\n"
          << "   PANEL ADMINA | Zalogowany: " << admin.getFullNameUser() << " | ID: " << admin.getIdUser() << '\n'
@@ -243,7 +245,7 @@ void daneAdmin(const User &admin, const User &client, const Resource &res){
     std::cout << "Cena/h: " << res.getPricePerSlot() << " PLN" << std::endl;
 }
 
-
+//Funkcje Klienta
 void clientPanel(const User &client, const Resource &res){
     cout << "==================================================\n"
          << "   PANEL KLIENTA | Zalogowany: " << client.getFullNameUser() << " | ID: " << client.getIdUser() << '\n'
