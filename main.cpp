@@ -148,6 +148,35 @@ int userChoiceLog(){
     }
 }
 
+void adminPanel(const User &admin, const Resource &res){
+     cout << "==================================================\n"
+         << "   PANEL ADMINA | Zalogowany: " << admin.getFullNameUser() << " | ID: " << admin.getIdUser() << '\n'
+         << "==================================================" << "\n\n";
+
+    cout << "   --- ZARZĄDZANIE ZASOBAMI ---\n";
+    cout << "   [1] Lista wszystkich zasobów\n";
+    cout << "   [2] Dodaj nowy zasób\n";
+    cout << "   [3] Zmień cenę / dostępność zasobu\n\n";
+
+    cout << "   --- PRZEGLĄD SYSTEMU ---\n";
+    cout << "   [4] Pełny harmonogram rezerwacji (Wszystkie)\n";
+    cout << "   [5] Raport przychodów i obłożenia\n\n";
+
+    cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
+    cout << "==================================================\n";
+}
+
+int adminChoiceLog(){
+    int adminChoice;
+    while(true){
+        if(cin >> adminChoice && adminChoice >= 0 && adminChoice <=5) return adminChoice;
+
+        cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+}
+
 //Testowe - AI
 void daneAdmin(const User &admin, const User &client, const Resource &res){
     std::cout << "=== KONTO ADMINA ===" << std::endl;
@@ -167,23 +196,6 @@ void daneAdmin(const User &admin, const User &client, const Resource &res){
     std::cout << "Cena/h: " << res.getPricePerSlot() << " PLN" << std::endl;
 }
 
-void adminPanel(const User &admin, const Resource &res){
-     cout << "==================================================\n"
-         << "   PANEL ADMINA | Zalogowany: " << admin.getFullNameUser() << " | ID: " << admin.getIdUser() << '\n'
-         << "==================================================" << "\n\n";
-
-    cout << "   --- ZARZĄDZANIE ZASOBAMI ---\n";
-    cout << "   [1] Lista wszystkich zasobów\n";
-    cout << "   [2] Dodaj nowy zasób\n";
-    cout << "   [3] Zmień cenę / dostępność zasobu\n\n";
-
-    cout << "   --- PRZEGLĄD SYSTEMU ---\n";
-    cout << "   [4] Pełny harmonogram rezerwacji (Wszystkie)\n";
-    cout << "   [5] Raport przychodów i obłożenia\n\n";
-
-    cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
-    cout << "==================================================\n";
-}
 
 void clientPanel(const User &client, const Resource &res){
     cout << "==================================================\n"
@@ -470,9 +482,7 @@ int main(){
                 clearScreen();
                 clientPanel(users[1], resources[0]);
                 int clientChoiceUser = clientChoiceLog();
-                if(clientChoiceUser == 0){
-                    break;
-                }
+                if(clientChoiceUser == 0)   break;
                 switch(clientChoiceUser){
                     case 1:
                         int backToClientPanel;
@@ -498,12 +508,30 @@ int main(){
         }
         else if(choiceUser == 2){
             clearScreen();
-            // daneAdmin(users[0], users[1], resources[0]);
-            // cout << "\nNacisnij Enter, aby wrocic do menu";
-            // cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            // cin.get();
             while(true){
+                clearScreen();
                 adminPanel(users[0], resources[0]);
+                int adminChoice =  adminChoiceLog();
+                switch (adminChoice){
+                if(adminChoice == 0)    break;
+                case 1:
+                    int backToAdminPanel;
+                    clearScreen();
+                    displayResourcesAndPricing(resources, false);
+                    cout << "[0] Powrot > "; cin >> backToAdminPanel;
+                    if(backToAdminPanel == 0){
+                        adminPanel(users[0], resources[0]);
+                    }
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                }
             }
         }
         else{
