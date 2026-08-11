@@ -140,15 +140,15 @@ int userChoiceLog(){
     int choiceUser;
     while (true) {
         cout << "wybierz opcje > ";
-        if (cin >> choiceUser && choiceUser >= 0 && choiceUser <= 2) {
-            return choiceUser;
-        }
+        if (cin >> choiceUser && choiceUser >= 0 && choiceUser <= 2) return choiceUser;
+        
         cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 
+//Testowe - AI
 void daneAdmin(const User &admin, const User &client, const Resource &res){
     std::cout << "=== KONTO ADMINA ===" << std::endl;
     std::cout << "ID: " << admin.getIdUser() << std::endl;
@@ -165,6 +165,24 @@ void daneAdmin(const User &admin, const User &client, const Resource &res){
     std::cout << "Nazwa: " << res.getNameResource() << std::endl;
     std::cout << "Pojemność: " << res.getCapacity() << " osób" << std::endl;
     std::cout << "Cena/h: " << res.getPricePerSlot() << " PLN" << std::endl;
+}
+
+void adminPanel(const User &admin, const Resource &res){
+     cout << "==================================================\n"
+         << "   PANEL ADMINA | Zalogowany: " << admin.getFullNameUser() << " | ID: " << admin.getIdUser() << '\n'
+         << "==================================================" << "\n\n";
+
+    cout << "   --- ZARZĄDZANIE ZASOBAMI ---\n";
+    cout << "   [1] Lista wszystkich zasobów\n";
+    cout << "   [2] Dodaj nowy zasób\n";
+    cout << "   [3] Zmień cenę / dostępność zasobu\n\n";
+
+    cout << "   --- PRZEGLĄD SYSTEMU ---\n";
+    cout << "   [4] Pełny harmonogram rezerwacji (Wszystkie)\n";
+    cout << "   [5] Raport przychodów i obłożenia\n\n";
+
+    cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
+    cout << "==================================================\n";
 }
 
 void clientPanel(const User &client, const Resource &res){
@@ -189,10 +207,9 @@ int clientChoiceLog(){
     int clientChoiceUser;
     while (true) {
         cout << "wybierz opcje > ";
-        if (cin >> clientChoiceUser && clientChoiceUser >= 0 && clientChoiceUser <= 4) {
-            return clientChoiceUser;
-        }
-        cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
+        if (cin >> clientChoiceUser && clientChoiceUser >= 0 && clientChoiceUser <= 4) return clientChoiceUser;
+        
+        cout << "Nieprawidlowe dane. Sprobuj ponownie" << endl;
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
@@ -218,9 +235,9 @@ void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive
 
     cout << string(78, '-') << "\n";
     for(const auto& res : resources){
-        if(isActive && !res.getIsActive()){
+        if(isActive && !res.getIsActive())
             continue;
-        }
+        
     
 
         string capStr = to_string(res.getCapacity()) + " os.";
@@ -236,6 +253,7 @@ void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive
     cout << "==============================================================================\n";
 }
 
+//AI
 time_t makeTimestamp(int year, int month, int day, int hour) {
     struct tm timeInfo = {0};
     timeInfo.tm_year = year - 1900;
@@ -256,7 +274,7 @@ time_t makeTimestamp(int year, int month, int day, int hour) {
     }
     return timestamp;
 }
-
+//AI
 string formatTimestamp(time_t timestamp) {
     struct tm *timeInfo = localtime(&timestamp);
     if (!timeInfo) return "n/a";
@@ -275,6 +293,7 @@ string reservationStatusToString(ReservationStatus status) {
     }
 }
 
+//AI
 const Resource* findResourceById(const vector<Resource>& resources, unsigned int resourceId) {
     for (const auto& resource : resources) {
         if (resource.getIdResource() == resourceId) {
@@ -345,12 +364,13 @@ void newReservation(const User& user, const vector<Resource>& resources, vector<
     cout << "Podaj date od-do Dzien - Miesiac - Rok> \n";
     cout << string(78, '-') << "\n";
     cin >> Day >> Month >> Year;
-    
+    if(Day > 31 && Day < 1 || Month > 12 && Month < 1 || Year < 2026) return;
+
     clearScreen();
     cout << "Podaj Godzine poczatkowa > ";  cin >> startHour;
     cout << "Podaj godzine zakonczenia > "; cin >> endHour;
         cout << string(78, '-') << "\n";
-    if (endHour <= startHour) {
+    if (endHour <= startHour || startHour < 0 && startHour > 24 || endHour < 0 && endHour > 24) {
         clearScreen();
         cout << "\n[!] Błąd: Godzina zakończenia musi być późniejsza niż rozpoczęcia.\n";
         return;
@@ -478,10 +498,13 @@ int main(){
         }
         else if(choiceUser == 2){
             clearScreen();
-            daneAdmin(users[0], users[1], resources[0]);
-            cout << "\nNacisnij Enter, aby wrocic do menu";
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cin.get();
+            // daneAdmin(users[0], users[1], resources[0]);
+            // cout << "\nNacisnij Enter, aby wrocic do menu";
+            // cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            // cin.get();
+            while(true){
+                adminPanel(users[0], resources[0]);
+            }
         }
         else{
             clearScreen();
