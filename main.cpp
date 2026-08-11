@@ -169,6 +169,7 @@ void adminPanel(const User &admin, const Resource &res){
 int adminChoiceLog(){
     int adminChoice;
     while(true){
+        cout << "wybierz opcje > ";
         if(cin >> adminChoice && adminChoice >= 0 && adminChoice <=5) return adminChoice;
 
         cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
@@ -177,6 +178,52 @@ int adminChoiceLog(){
     }
 }
 
+void addNewResourcesAndPricing(vector<Resource>& resources){
+    clearScreen();
+    cout << "==================================================\n"
+         << "               NOWE WOLNE REZERWACJE              \n"
+         << "==================================================\n\n";
+    
+    string newResourcesName;
+    cout << "Podaj nazwe zasobu > ";        cin.ignore(); getline(cin, newResourcesName);
+    cout << string(50, '-') << "\n\n";
+
+    unsigned int newResourcesCapacity;
+    cout << "Podaj pojemnosc zasobu > ";    cin >> newResourcesCapacity;
+    cout << string(50, '-') << "\n\n";
+
+    double newResourcesPrice;
+    cout << "Podaj cene za godzine > ";     cin >> newResourcesPrice;
+    clearScreen();
+
+    cout << "==================================================\n"
+         << "       TWORZENIE NOWEJ REZERWACJI (Krok 2/2)      \n"
+         << "==================================================\n";
+
+    cout << left
+        << setw(30) << "Nazwa Zasobu" 
+        << setw(14) << "Pojemnosc"   
+        << setw(15) << "Cena/godz.\n";
+    cout << string(59, '-') << "\n";
+
+    cout << left
+        << setw(30) <<  newResourcesName  
+        << setw(14) <<  newResourcesCapacity  << " os."
+        << setw(15) <<  newResourcesPrice << "\n";
+    cout << string(59, '-') << "\n\n";
+
+    string checkAddNewResources;
+    cout << "Czy chcesz utworzyc nowa rezerwacje? [T]/[N] > ";
+    cin.ignore();
+    getline(cin, checkAddNewResources);
+    if(checkAddNewResources == "T" || checkAddNewResources == "t"){
+        Resource newRes(newResourcesName, newResourcesCapacity, newResourcesPrice);
+        resources.push_back(newRes);
+    }
+    else{
+        return;
+    }
+}
 //Testowe - AI
 void daneAdmin(const User &admin, const User &client, const Resource &res){
     std::cout << "=== KONTO ADMINA ===" << std::endl;
@@ -512,8 +559,8 @@ int main(){
                 clearScreen();
                 adminPanel(users[0], resources[0]);
                 int adminChoice =  adminChoiceLog();
-                switch (adminChoice){
                 if(adminChoice == 0)    break;
+                switch (adminChoice){
                 case 1:
                     int backToAdminPanel;
                     clearScreen();
@@ -524,6 +571,7 @@ int main(){
                     }
                     break;
                 case 2:
+                    addNewResourcesAndPricing(resources);
                     break;
                 case 3:
                     break;
