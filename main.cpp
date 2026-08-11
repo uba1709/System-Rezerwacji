@@ -394,6 +394,10 @@ void newReservation(const User& user, const vector<Resource>& resources, vector<
 
 }
 
+void canlceReservation(const User& user, const vector<Resource>& resources, const vector<Reservation>& reservation){
+    
+}
+
 int main(){
     vector<User> users;
     vector<Resource> resources;
@@ -434,7 +438,8 @@ int main(){
                         displayUserReservations(reservations, resources, users[1].getIdUser());
                         break;
                     case 4:
-                        cout << "\nAnuluj rezerwacje...\n";
+                        displayUserReservations(reservations, resources, users[1].getIdUser());
+                        
                         break;
                 }
             }
