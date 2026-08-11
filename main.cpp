@@ -287,7 +287,7 @@ const Resource* findResourceById(const vector<Resource>& resources, unsigned int
 void displayUserReservations(const vector<Reservation>& reservations, const vector<Resource>& resources, unsigned int userId) {
     clearScreen();
     cout << "==================================================\n"
-         << "          TWOJE AKTUALNE REZERWACJE              \n"
+         << "                TWOJE REZERWACJE                  \n"
          << "==================================================\n";
 
     bool hasReservation = false;
@@ -394,8 +394,43 @@ void newReservation(const User& user, const vector<Resource>& resources, vector<
 
 }
 
-void canlceReservation(const User& user, const vector<Resource>& resources, const vector<Reservation>& reservation){
-    
+void cancelReservationForClient(const User& user, vector<Reservation>& reservation){
+    clearScreen();
+     cout << "==================================================\n"
+          << "               ANULOWANIE REZERWACJI              \n"
+          << "==================================================\n";
+
+    bool isActiveReservation = false;
+    for(const auto& res : reservation){
+
+        if(res.getUserId() == user.getIdUser() && res.getStatus() != ReservationStatus::CANCELLED){
+            isActiveReservation = true;
+            cout << "ID: " << res.getId() << "\n"
+                 << "ID Zasobu: " << res.getResourceId() << "\n"
+                 << "ID Miejsca: " << res.getReservedSeats() << "\n"
+                 << "Koszt: " << res.getTotalPrice() << "\n";
+        }
+    }
+    if(!isActiveReservation){
+        clearScreen();
+        cout << "Nie posiadasz zadnej rejestacji\n";
+        return;
+    }
+    unsigned int cancelResID;
+    cout << "Podaj id rezerwacji do anulowania > ";
+    cin >> cancelResID;
+    if(cancelResID == 0) return;
+    for(auto& res : reservation){
+        if(res.getId() == cancelResID && res.getUserId() == user.getIdUser()){
+            if(res.setCancel()){
+                cout << "Udalo sie pomyslnie anulowac rezeracje o ID: " << cancelResID << "\n";
+            }else{
+                cout << "Nie mozna anulowac rezeracji!\n";
+            }
+            return;
+        }
+    }
+    cout << "Nie znaleziono rezerwacji\n";
 }
 
 int main(){
@@ -420,14 +455,12 @@ int main(){
                 }
                 switch(clientChoiceUser){
                     case 1:
-                        {
-                            int backToClientPanel;
-                            clearScreen();
-                            displayResourcesAndPricing(resources, false);
-                            cout << "[0] Powrot > "; cin >> backToClientPanel;
-                            if(backToClientPanel == 0){
-                                clientPanel(users[1], resources[0]);
-                            }
+                        int backToClientPanel;
+                        clearScreen();
+                        displayResourcesAndPricing(resources, false);
+                        cout << "[0] Powrot > "; cin >> backToClientPanel;
+                        if(backToClientPanel == 0){
+                            clientPanel(users[1], resources[0]);
                         }
                         break;
                     case 2:
@@ -438,9 +471,8 @@ int main(){
                         displayUserReservations(reservations, resources, users[1].getIdUser());
                         break;
                     case 4:
-                        displayUserReservations(reservations, resources, users[1].getIdUser());
-                        
-                        break;
+                        cancelReservationForClient(users[1], reservations); 
+                    break;
                 }
             }
         }
