@@ -104,6 +104,7 @@ class Resource{
         bool getIsActive()           const {return isActive;}
         
         void setIsActive(bool active){isActive = active;}
+        void setNewName(string newName){name = newName;}
         void setPricePerSlot(double newPrice){
             if(newPrice >= 0) pricePerSlot = newPrice;
         }
@@ -158,11 +159,12 @@ void adminPanel(const User &admin, const Resource &res){
     cout << "   --- ZARZĄDZANIE ZASOBAMI ---\n";
     cout << "   [1] Lista wszystkich zasobów\n";
     cout << "   [2] Dodaj nowy zasób\n";
-    cout << "   [3] Zmień cenę / dostępność zasobu\n\n";
+    cout << "   [3] Zmień cenę / dostępność zasobu\n";
+    cout << "   [4] Zmien nazwe zasobu\n\n";
 
-    cout << "   --- PRZEGLĄD SYSTEMU ---\n";
-    cout << "   [4] Pełny harmonogram rezerwacji (Wszystkie)\n";
-    cout << "   [5] Raport przychodów i obłożenia\n\n";
+    cout << "   --- PRZEGLĄD SYSTEMU Podczas robienia! ---\n";
+    cout << "   [5] Pełny harmonogram rezerwacji (Wszystkie)\n";
+    cout << "   [6] Raport przychodów i obłożenia\n\n";
 
     cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
     cout << "==================================================\n";
@@ -313,6 +315,65 @@ void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
             cout << "Nieprawidlowa opcja.\n";
             break;
     }
+}
+
+void changeNameInResources(vector<Resource>& resources,  bool isActive = false){
+    int choiceIDToChangeName;
+    cout << "Podaj id do zmiany nazwy > ";
+    cin >> choiceIDToChangeName;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    Resource* target = nullptr;
+    for(auto& res : resources){
+        if(static_cast<int>(res.getIdResource()) == choiceIDToChangeName){
+            if(isActive && !res.getIsActive())
+                continue;
+            target = &res;
+            break;
+        }
+    }
+
+    if(!target){
+        clearScreen();
+        cout << "Nie ma takiego ID jak: " << choiceIDToChangeName << '\n';
+        cout << string(50, '=');
+        return;
+    }
+
+    clearScreen();
+    cout << "==================================================\n"
+         << "               ZMIANA nazwy w ID " << choiceIDToChangeName << "\n"
+         << "==================================================\n";
+
+    cout << left   
+         << setw(7)  << "ID"
+         << setw(30) << "Nazwa Zasobu"
+         << setw(14) << "Pojemnosc"
+         << setw(15) << "Cena/godz."
+         << "status\n";
+    cout << string(78, '-') << "\n";
+
+    string capStr = to_string(target->getCapacity()) + " os.";
+    cout << left    
+         << setw(7)  << target->getIdResource()
+         << setw(30) << target->getNameResource()
+         << setw(14) << capStr
+         << setw(15) << target->getCapacity()
+         << (target->getIsActive() ? "[Dostepny]" : "Niedostepny") << "\n";
+    cout << string(78, '+');
+
+    string newName;
+    cout << "\nPodaj nowa nazwe zasobu > ";
+    getline(cin, newName);
+    if(newName.empty()){
+        cout << "Nazwa nie moze byc pusta.\n";
+        return;
+    }
+    target->setNewName(newName);
+
+    clearScreen();
+    cout << "Zmiana sie powiadla\n";
+    return;   
 }
 
 //Testowe - AI
@@ -610,6 +671,7 @@ int main(){
     users.push_back(User("Jan Kowalski", "+48 111 222 333", Role::ADMIN));
     users.push_back(User("Anna Nowak", "+48 999 888 777", Role::CLIENT));
     resources.push_back(Resource("Sala Konferencyjna A", 20, 50.0));
+    clearScreen();
     while(true){
         clearScreen();
         header();
@@ -633,6 +695,7 @@ int main(){
                         break;
                     case 2:
                         clearScreen();
+                        displayResourcesAndPricing(resources, false);
                         newReservation(users[1], resources, reservations);
                         break;
                     case 3:
@@ -670,14 +733,15 @@ int main(){
                     changePriceAndStatus(resources, false);
                     break;
                 case 4:
-                    break;
-                case 5:
+                    clearScreen();
+                    displayResourcesAndPricing(resources, false);
+                    changeNameInResources(resources, false);
                     break;
                 }
             }
         }
         else{
-            clearScreen();
+            clearScreen();     
             return 0;
         }
     }
