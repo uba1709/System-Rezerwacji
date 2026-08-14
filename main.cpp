@@ -226,6 +226,95 @@ void addNewResourcesAndPricing(vector<Resource>& resources){
         return;
     }
 }
+
+void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
+    int choiceIDToChange;
+    cout << "Podaj id zasobu do zmiany > ";
+    cin >> choiceIDToChange;
+
+    Resource* target = nullptr;
+    for(auto& res : resources){
+        if(static_cast<int>(res.getIdResource()) == choiceIDToChange){
+            if(isActive && !res.getIsActive())
+                continue;
+            target = &res;
+            break;
+        }
+    }
+
+    if(!target){
+        clearScreen();
+        cout << "Nie znaleziono zasobu o ID: " << choiceIDToChange << "\n";
+        return;
+    }
+
+    clearScreen();
+    cout << "==================================================\n"
+         << "               ZMIANA ZASOBU PO ID " << choiceIDToChange << "\n"
+         << "==================================================\n";
+
+    cout << left
+         << setw(7)  << "ID"
+         << setw(30) << "Nazwa Zasobow"
+         << setw(14) << "Pojemnosc"
+         << setw(15) << "Cena/godz."
+         << "Status" << "\n";
+    cout << string(78, '-') << "\n";
+
+    string capStr = to_string(target->getCapacity()) + " os.";
+    cout << left
+         << setw(7)  << target->getIdResource()
+         << setw(30) << target->getNameResource()
+         << setw(14) << capStr
+         << setw(15) << target->getPricePerSlot()
+         << (target->getIsActive() ? "[Dostepny]" : "[Niedostepny]") << "\n";
+    cout << "==============================================================================\n\n";
+
+    int choiceWithChange;
+    cout << "   [1] Zmien cene\n";
+    cout << "   [2] Zmien status\n\n";
+    cout << string(50, '-') << "\n";
+    cout << "Wybierz opcje zmiany > ";
+    cin >> choiceWithChange;
+
+    switch(choiceWithChange){
+        case 1:
+            {
+                double newPrice;
+                cout << "Podaj nowa cene za godzine > ";
+                cin >> newPrice;
+                if(newPrice >= 0){
+                    target->setPricePerSlot(newPrice);
+                    cout << "Cena zostala zmieniona.\n";
+                } else {
+                    cout << "Cena nie moze byc ujemna.\n";
+                }
+            }
+            break;
+
+        case 2:
+            {
+                char statusChoice;
+                cout << "Ustaw status [D]ostepny / [N]iedostepny > ";
+                cin >> statusChoice;
+                if(statusChoice == 'D' || statusChoice == 'd'){
+                    target->setIsActive(true);
+                    cout << "Zasob ustawiony jako dostepny.\n";
+                } else if(statusChoice == 'N' || statusChoice == 'n'){
+                    target->setIsActive(false);
+                    cout << "Zasob ustawiony jako niedostepny.\n";
+                } else {
+                    cout << "Nieprawidlowy wybor.\n";
+                }
+            }
+            break;
+
+        default:
+            cout << "Nieprawidlowa opcja.\n";
+            break;
+    }
+}
+
 //Testowe - AI
 void daneAdmin(const User &admin, const User &client, const Resource &res){
     std::cout << "=== KONTO ADMINA ===" << std::endl;
@@ -311,7 +400,7 @@ void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive
         cout << left
             << (res.getIsActive() ? "[Dostepny]" : "[Niedotepny]") << "\n"; 
     }
-    cout << "==============================================================================\n";
+    cout << "==============================================================================\n\n";
 }
 
 //AI
@@ -576,6 +665,9 @@ int main(){
                     addNewResourcesAndPricing(resources);
                     break;
                 case 3:
+                    clearScreen();
+                    displayResourcesAndPricing(resources, false);
+                    changePriceAndStatus(resources, false);
                     break;
                 case 4:
                     break;
