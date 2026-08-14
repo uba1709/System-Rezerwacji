@@ -4,6 +4,7 @@
 #include <limits>
 #include <stdlib.h>
 #include <iomanip>
+#include <ctime>
 using namespace std;
 
 enum class Menu{
@@ -163,8 +164,7 @@ void adminPanel(const User &admin, const Resource &res){
     cout << "   [4] Zmien nazwe zasobu\n\n";
 
     cout << "   --- PRZEGLĄD SYSTEMU Podczas robienia! ---\n";
-    cout << "   [5] Pełny harmonogram rezerwacji (Wszystkie)\n";
-    cout << "   [6] Raport przychodów i obłożenia\n\n";
+    cout << "   [5] Pełny harmonogram rezerwacji (Wszystkie)\n\n";
 
     cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
     cout << "==================================================\n";
@@ -174,7 +174,7 @@ int adminChoiceLog(){
     int adminChoice;
     while(true){
         cout << "wybierz opcje > ";
-        if(cin >> adminChoice && adminChoice >= 0 && adminChoice <=5) return adminChoice;
+        if(cin >> adminChoice && adminChoice >= 0 && adminChoice <=6) return adminChoice;
 
         cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
         cin.clear();
@@ -376,23 +376,38 @@ void changeNameInResources(vector<Resource>& resources,  bool isActive = false){
     return;   
 }
 
-//Testowe - AI
-void daneAdmin(const User &admin, const User &client, const Resource &res){
-    std::cout << "=== KONTO ADMINA ===" << std::endl;
-    std::cout << "ID: " << admin.getIdUser() << std::endl;
-    std::cout << "Nazwa: " << admin.getFullNameUser() << std::endl;
-    std::cout << "Rola: " << (admin.getRole() == Role::ADMIN ? "ADMIN" : "CLIENT") << std::endl;
 
-    std::cout << "\n=== KONTO KLIENTA ===" << std::endl;
-    std::cout << "ID: " << client.getIdUser() << std::endl;
-    std::cout << "Nazwa: " << client.getFullNameUser() << std::endl;
-    std::cout << "Rola: " << (client.getRole() == Role::ADMIN ? "ADMIN" : "CLIENT") << std::endl;
+string formatTimestamp(time_t timestamp);
+string reservationStatusToString(ReservationStatus status);
+const Resource* findResourceById(const vector<Resource>& resources, unsigned int resourceId);
 
-    std::cout << "\n=== ZASÓB ===" << std::endl;
-    std::cout << "ID Zasobu: " << res.getIdResource() << std::endl;
-    std::cout << "Nazwa: " << res.getNameResource() << std::endl;
-    std::cout << "Pojemność: " << res.getCapacity() << " osób" << std::endl;
-    std::cout << "Cena/h: " << res.getPricePerSlot() << " PLN" << std::endl;
+void bookingSchedule(const vector<Reservation>& reservations, const vector<Resource>& resources){
+    clearScreen();
+    int numberOfReservations = 0;
+    cout << "==================================================\n"
+        << "               Harmonogtam Rezerwacji             \n"
+        << "==================================================\n\n";
+    for(const auto& res : reservations){
+        if(reservationStatusToString(res.getStatus()) == "PENDING"){
+            numberOfReservations++;
+            const Resource* resource = findResourceById(resources, res.getResourceId());
+            cout << string(50, '-') << "\n\n";
+            cout << "   Pozycja rezerwacji: " << numberOfReservations << "\n";
+            cout << "   ID rezerwacji: " << res.getId() << "\n";
+            cout << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n";
+            cout << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n";
+            cout << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n";
+            cout << "   Miejsce: " << res.getReservedSeats() << "\n";
+            cout << "   Status: " << reservationStatusToString(res.getStatus()) << "\n";
+            cout << "   Cena: " << res.getTotalPrice() << "\n";
+            cout << string(50, '-') << "\n\n";
+        }
+        if(numberOfReservations == 0){
+            cout << "Nie ma zadnej rezerwacji \n";
+            cout << string(50, '=') << "\n\n";
+            return;
+        }
+    }
 }
 
 //Funkcje Klienta
@@ -523,16 +538,18 @@ void displayUserReservations(const vector<Reservation>& reservations, const vect
     bool hasReservation = false;
     for(const auto& res : reservations){
         if(res.getUserId() != userId) continue;
-        hasReservation = true;
-        const Resource* resource = findResourceById(resources, res.getResourceId());
-        cout << "   ID rezerwacji: " << res.getId() << "\n"
-             << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
-             << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n"
-             << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n"
-             << "   Miejsce: " << res.getReservedSeats() << "\n"
-             << "   Status: " << reservationStatusToString(res.getStatus()) << "\n" 
-             << "   Cena: " << res.getTotalPrice() <<  "\n" 
-            << "--------------------------------------------------\n";
+        if(reservationStatusToString(res.getStatus()) == "PENDING"){
+            hasReservation = true;
+            const Resource* resource = findResourceById(resources, res.getResourceId());
+            cout << "   ID rezerwacji: " << res.getId() << "\n"
+                << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
+                << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n"
+                << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n"
+                << "   Miejsce: " << res.getReservedSeats() << "\n"
+                << "   Status: " << reservationStatusToString(res.getStatus()) << "\n" 
+                << "   Cena: " << res.getTotalPrice() <<  "\n" 
+                << "--------------------------------------------------\n";
+        }
     }
     if(!hasReservation){
         cout << "Brak aktywnych rezerwacji dla Twojego konta.\n";
@@ -629,17 +646,19 @@ void cancelReservationForClient(const User& user, vector<Reservation>& reservati
     clearScreen();
      cout << "==================================================\n"
           << "               ANULOWANIE REZERWACJI              \n"
-          << "==================================================\n";
+          << "==================================================\n\n";
 
     bool isActiveReservation = false;
     for(const auto& res : reservation){
 
         if(res.getUserId() == user.getIdUser() && res.getStatus() != ReservationStatus::CANCELLED){
             isActiveReservation = true;
-            cout << "ID: " << res.getId() << "\n"
-                 << "ID Zasobu: " << res.getResourceId() << "\n"
-                 << "ID Miejsca: " << res.getReservedSeats() << "\n"
-                 << "Koszt: " << res.getTotalPrice() << "\n";
+            cout << string(50, '-') << "\n\n";
+            cout << "   ID: " << res.getId() << "\n"
+                 << "   ID Zasobu: " << res.getResourceId() << "\n"
+                 << "   ID Miejsca: " << res.getReservedSeats() << "\n"
+                 << "   Koszt: " << res.getTotalPrice() << "\n\n";
+            cout << string(50, '-') << "\n\n";
         }
     }
     if(!isActiveReservation){
@@ -736,6 +755,15 @@ int main(){
                     clearScreen();
                     displayResourcesAndPricing(resources, false);
                     changeNameInResources(resources, false);
+                    break;
+               
+                case 5:
+                    clearScreen();
+                    bookingSchedule(reservations, resources);
+                    cout << "[0] Powrot > "; cin >> backToAdminPanel;
+                    if(backToAdminPanel == 0){
+                        adminPanel(users[0], resources[0]);
+                    }
                     break;
                 }
             }
