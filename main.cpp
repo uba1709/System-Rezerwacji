@@ -7,17 +7,20 @@
 #include <ctime>
 using namespace std;
 
+// Wybor opcji menu
 enum class Menu{
     logInClient = 1,
     logInAdmin  = 2,
     logOut      = 3
 };
 
+// Role uzytkownikow 
 enum class Role{
     CLIENT,
     ADMIN
 };
 
+//Przypisanie statusu rezeracji
 enum class ReservationStatus {
     PENDING,
     CONFIRMED,
@@ -27,32 +30,45 @@ enum class ReservationStatus {
 
 class Reservation{
     private:
-        static unsigned int nextAutoIncrementId;
-        unsigned int id;
-        unsigned int userId;
-        unsigned int resourceId;
-        time_t startTimestamp;
-        time_t endTimestamp;
-        unsigned int reservedSeats;
-        ReservationStatus status;
-        double totalPrice;
+        static unsigned int nextAutoIncrementId; // static unsigned int. Widoczna tylko dla class Reservation. unsigned sprawa zmienną tylko dodatnią 
+        unsigned int id; // ID rezerwacji
+        unsigned int userId; // ID uzytkownia w rezerwacji
+        unsigned int resourceId; // ID zasobu
+        time_t startTimestamp; // Data początkowa
+        time_t endTimestamp; // Data zakonczenia
+        unsigned int reservedSeats; // Stawka za osobe
+        ReservationStatus status; // Status rezerwacji (enum class ReservationStatus)
+        double totalPrice; // Cena calkowita
 
+        // Obliczanie ceny rezeracji
         void calculateTotalPrice(double pricePerSlot){
+            // Jeśli data zakonczenia jest taka sama lub wczesniejsza niz data startowa cena calkowita jest 0 
             if(endTimestamp <= startTimestamp){
                 totalPrice = 0.0;
                 return;
             }
+            // Obliczanie ceny rezerwacji w godzinach przez czas trwania i stawke 
             double durationHours = difftime(endTimestamp, startTimestamp) / 3600;
             totalPrice = durationHours * reservedSeats * pricePerSlot;
         }
     public:
+        //Tworzenie nowej rezerwacji
+        //Przypisanie zmiennych do informacji o nowej rezerwacjii
         Reservation(unsigned int uId, unsigned rId, time_t start, time_t end, unsigned int seats, double pricePerSlot)
+                // nextAutoIncrementId++ (Za kazdym razem o + 1)
+                // ID Uzytkownika 
+                // ID Rezerwacji
+                // Data początkowa
+                // Data zakonczenia
+                // Stawka za osobe
+                // Ustawienie statusu rezerwacji na PENDING
             : id(nextAutoIncrementId++), userId(uId), resourceId(rId), startTimestamp(start), endTimestamp(end),
                  reservedSeats(seats), status(ReservationStatus::PENDING){
+                // Obliczenie ceny calkowitej
                 calculateTotalPrice(pricePerSlot);
             }
 
-        // Tylko do odczytu danych
+        // Tylko do odczytu danych (const)
         unsigned int getId()            const {return id;}
         unsigned int getUserId()        const {return userId;}
         unsigned int getResourceId()    const {return resourceId;}
@@ -62,7 +78,9 @@ class Reservation{
         ReservationStatus getStatus()   const {return status;}
         double getTotalPrice()          const {return totalPrice;}
         
+        // Ustawienie nowego statusu dla rezerwacji
         void setStatus(ReservationStatus newStatus){status = newStatus;}
+        // sprawdzenia czy status rezerwacji jest COMPLETED jesli tak -> Ustawienie statusu rezerwacji na CANCELLED 
         bool setCancel(){
             if(status == ReservationStatus::COMPLETED) return false;
             status = ReservationStatus::CANCELLED;
@@ -72,31 +90,48 @@ class Reservation{
 
 class User{
     private:
-        static unsigned int nextAutoIncrementId;
-        unsigned int id;
-        string fullName;
-        string phoneNumber;
-        Role role;
+        static unsigned int nextAutoIncrementId; // static unsigned int. Widoczna tylko dla class Reservation. unsigned sprawa zmienną tylko dodatnią
+        unsigned int id; // ID uzytkownika
+        string fullName; // Imie i Nazwisko uzytkownika
+        string phoneNumber; // Number telefonu uzytkownika
+        Role role; // Przypisana rola (Admin lub Client) [enum class Role]
     public:
+        // Tworzenie nowego uzytkownika 
+        // Podanie imie i nazwisko
+        // Number telfonu
+        // Przypisana rola 
         User(string name, string phone, Role r) 
+            // nextAutoIncrementId++ (Za kazdym razem o + 1)
+            // Imie i nazwisko
+            // Numer telefonu
+            // Rola 
             : id(nextAutoIncrementId++), fullName(name), phoneNumber(phone), role(r){}
-        // Tylko do odczytu danych
-        unsigned getIdUser() const          {return id;}
-        string getFullNameUser() const      {return fullName;}
-        string getPhoneNumberUser() const   {return phoneNumber;}
-        Role getRole() const                {return role;}
+
+        // Tylko do odczytu danych (const)
+        unsigned getIdUser()        const {return id;}
+        string getFullNameUser()    const {return fullName;}
+        string getPhoneNumberUser() const {return phoneNumber;}
+        Role getRole()              const {return role;}
 };
 
 class Resource{
     private:
-        static unsigned int nextAutoIncrementId;
-        unsigned int id;
-        string name;
-        unsigned int capacity;
-        double pricePerSlot;
-        bool isActive;
+        static unsigned int nextAutoIncrementId; // static unsigned int. Widoczna tylko dla class Reservation. unsigned sprawa zmienną tylko dodatnią 
+        unsigned int id; // ID zasobu
+        string name; // Nazwa zasobu
+        unsigned int capacity; // Ilosc miejsc 
+        double pricePerSlot; // cena za miejsce
+        bool isActive; // Status aktywnosci (Dostepne / Niedostepne)
     public:
-        Resource(string n, unsigned int cap, double price) 
+        // Podanie nazwy zasobu
+        // Ilosc miejsc 
+        // cena za osobe
+        Resource(string n, unsigned int cap, double price)
+            // nextAutoIncrementId++ (Za kazdym razem o + 1)
+            // Nazwa zasobu
+            // Ilosc miejsc 
+            // Cena za miejsce
+            // Danie statusu Dosetpny (isActive(true))
             : id(nextAutoIncrementId++), name(n), capacity(cap), pricePerSlot(price), isActive(true) {} 
         unsigned int getIdResource() const {return id;}
         string getNameResource()     const {return name;}
@@ -104,13 +139,15 @@ class Resource{
         double getPricePerSlot()     const {return pricePerSlot;}
         bool getIsActive()           const {return isActive;}
         
-        void setIsActive(bool active){isActive = active;}
-        void setNewName(string newName){name = newName;}
+       
+        void setIsActive(bool active){isActive = active;}  // Zmana aktywnosci na Dostepny
+        void setNewName(string newName){name = newName;}   // Ustawienie nowej nazwy dla zaosbu
         void setPricePerSlot(double newPrice){
-            if(newPrice >= 0) pricePerSlot = newPrice;
+            if(newPrice >= 0) pricePerSlot = newPrice; // Ustawienie nowej ceny za osobe
         }
 };
 
+// Przypisanie dla kazdej class zmiennej nextAutoIncrementId liczbe 1
 unsigned int Reservation::nextAutoIncrementId = 1;
 unsigned int User::nextAutoIncrementId        = 1;
 unsigned int Resource::nextAutoIncrementId    = 1;
@@ -124,12 +161,14 @@ void clearScreen() {
     #endif
 }
 
+// Baner początkowy
 void header(){
     cout << "==================================================\n"
          << "           SYSTEM REZERWACJI ZASOBOW\n"
          << "==================================================\n";
 }
 
+// Opcje logowania 
 void logOption(){
     cout << endl;
     cout << "   [1] Zaloguj jako Klient\n";
@@ -139,8 +178,10 @@ void logOption(){
     cout << "==================================================\n";
 }
 
+// Wybor uzytkownika kto sie loguje (Admin / Klient / Wyjscie)
 int userChoiceLog(){
     int choiceUser;
+    // Pentla wraz z sprawdzeniem czy uzytkownik uzył podpowiedniej opcji jesli tak zwraca choiceUser 
     while (true) {
         cout << "wybierz opcje > ";
         if (cin >> choiceUser && choiceUser >= 0 && choiceUser <= 2) return choiceUser;
@@ -151,7 +192,8 @@ int userChoiceLog(){
     }
 }
 
-//Funkcje admina
+// Funkcje admina
+// Panel administatora 
 void adminPanel(const User &admin, const Resource &res){
      cout << "==================================================\n"
          << "   PANEL ADMINA | Zalogowany: " << admin.getFullNameUser() << " | ID: " << admin.getIdUser() << '\n'
@@ -170,11 +212,13 @@ void adminPanel(const User &admin, const Resource &res){
     cout << "==================================================\n";
 }
 
+// Wybor pocji admina do adminPanel
 int adminChoiceLog(){
     int adminChoice;
+    // Pentla spawdzajaca czy admin wyboral odpowiednią opcje z mozliwych 
     while(true){
         cout << "wybierz opcje > ";
-        if(cin >> adminChoice && adminChoice >= 0 && adminChoice <=6) return adminChoice;
+        if(cin >> adminChoice && adminChoice >= 0 && adminChoice <=6) return adminChoice; // Jesli poda poprawna odsyl adminChoice
 
         cout << "Nieprawidlowe dane. Sprobuj ponownie." << endl;
         cin.clear();
@@ -182,28 +226,31 @@ int adminChoiceLog(){
     }
 }
 
+// Funkcja dodawania noweych zasobow 
 void addNewResourcesAndPricing(vector<Resource>& resources){
     clearScreen();
     cout << "==================================================\n"
          << "               NOWE WOLNE REZERWACJE              \n"
          << "==================================================\n\n";
     
+    // podanie nowej nazwy z zmiennej newResourcesName
     string newResourcesName;
-    cout << "Podaj nazwe zasobu > ";        cin.ignore(); getline(cin, newResourcesName);
+    cout << "Podaj nazwe zasobu > ";        cin.ignore(); getline(cin, newResourcesName); // cin.ignore() getline(cin, newResourcesName) Pozwala na dodanie spacji w nazwy nowego zasobu
     cout << string(50, '-') << "\n\n";
 
     unsigned int newResourcesCapacity;
-    cout << "Podaj pojemnosc zasobu > ";    cin >> newResourcesCapacity;
+    cout << "Podaj pojemnosc zasobu > ";    cin >> newResourcesCapacity; // Podanie ilosci miejsc
     cout << string(50, '-') << "\n\n";
 
     double newResourcesPrice;
-    cout << "Podaj cene za godzine > ";     cin >> newResourcesPrice;
+    cout << "Podaj cene za godzine > ";     cin >> newResourcesPrice; // Podanie ceny za osobe
     clearScreen();
 
     cout << "==================================================\n"
          << "       TWORZENIE NOWEJ REZERWACJI (Krok 2/2)      \n"
          << "==================================================\n";
 
+    // Sprawdzenie dokładnosci podanych danych 
     cout << left
         << setw(30) << "Nazwa Zasobu" 
         << setw(14) << "Pojemnosc"   
@@ -216,12 +263,17 @@ void addNewResourcesAndPricing(vector<Resource>& resources){
         << setw(15) <<  newResourcesPrice << "\n";
     cout << string(59, '-') << "\n\n";
 
+    // Potwierdzenie dodania nowej rezerwacji do vector<Resources> resources
     string checkAddNewResources;
     cout << "Czy chcesz utworzyc nowa rezerwacje? [T]/[N] > ";
     cin.ignore();
     getline(cin, checkAddNewResources);
+    // Jesli T
     if(checkAddNewResources == "T" || checkAddNewResources == "t"){
+        // Tworzenie nowej struktury Resource newRes 
+        // Podanie Nazwy, ilosc miejsc, ceny za miejsce
         Resource newRes(newResourcesName, newResourcesCapacity, newResourcesPrice);
+        // Przeslanie danych do vecotr
         resources.push_back(newRes);
     }
     else{
@@ -229,14 +281,19 @@ void addNewResourcesAndPricing(vector<Resource>& resources){
     }
 }
 
+// Funkcja zmiany ceny i statusu zasobu
 void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
+    // Wybor ID do zmian
     int choiceIDToChange;
-    cout << "Podaj id zasobu do zmiany > ";
-    cin >> choiceIDToChange;
+    cout << "Podaj id zasobu do zmiany > "; cin >> choiceIDToChange;
 
+    // Ustawienie target jak nullptr
     Resource* target = nullptr;
     for(auto& res : resources){
-        if(static_cast<int>(res.getIdResource()) == choiceIDToChange){
+        // Sprawdzanie i szukanie ID zasobu takiego samego jak podal uzytkownik
+        if(static_cast<int>(res.getIdResource()) == choiceIDToChange) // static_cast<int> -> ustawienie zmiennych na tylko int
+        {
+            // Jesli jest aktywne target na miec to samo ID co res
             if(isActive && !res.getIsActive())
                 continue;
             target = &res;
@@ -244,6 +301,7 @@ void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
         }
     }
 
+    // Sprawdzenie jeśli nie znaleziono danego ID
     if(!target){
         clearScreen();
         cout << "Nie znaleziono zasobu o ID: " << choiceIDToChange << "\n";
@@ -265,55 +323,50 @@ void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
 
     string capStr = to_string(target->getCapacity()) + " os.";
     cout << left
-         << setw(7)  << target->getIdResource()
-         << setw(30) << target->getNameResource()
-         << setw(14) << capStr
-         << setw(15) << target->getPricePerSlot()
-         << (target->getIsActive() ? "[Dostepny]" : "[Niedostepny]") << "\n";
+         << setw(7)  << target->getIdResource()   // ID wyszukanego zasobu
+         << setw(30) << target->getNameResource() // Nazwa wyszukanego zasobu
+         << setw(14) << capStr // Ilosc miejsc 
+         << setw(15) << target->getPricePerSlot() // Cena za miejsce 
+         << (target->getIsActive() ? "[Dostepny]" : "[Niedostepny]") << "\n"; // Status zasobu
     cout << "==============================================================================\n\n";
 
+    // Wybor co do zmiany
     int choiceWithChange;
     cout << "   [1] Zmien cene\n";
     cout << "   [2] Zmien status\n\n";
     cout << string(50, '-') << "\n";
-    cout << "Wybierz opcje zmiany > ";
-    cin >> choiceWithChange;
+    cout << "Wybierz opcje zmiany > ";  cin >> choiceWithChange;
 
     switch(choiceWithChange){
         case 1:
-            {
-                double newPrice;
-                cout << "Podaj nowa cene za godzine > ";
-                cin >> newPrice;
+            double newPrice;
+            cout << "Podaj nowa cene za godzine > ";    cin >> newPrice;
                 if(newPrice >= 0){
                     target->setPricePerSlot(newPrice);
                     cout << "Cena zostala zmieniona.\n";
-                } else {
+                } 
+                else {
                     cout << "Cena nie moze byc ujemna.\n";
                 }
-            }
             break;
-
         case 2:
-            {
-                char statusChoice;
-                cout << "Ustaw status [D]ostepny / [N]iedostepny > ";
-                cin >> statusChoice;
+            char statusChoice;
+            cout << "Ustaw status [D]ostepny / [N]iedostepny > ";   cin >> statusChoice;
                 if(statusChoice == 'D' || statusChoice == 'd'){
                     target->setIsActive(true);
                     cout << "Zasob ustawiony jako dostepny.\n";
-                } else if(statusChoice == 'N' || statusChoice == 'n'){
+                } 
+                else if(statusChoice == 'N' || statusChoice == 'n'){
                     target->setIsActive(false);
                     cout << "Zasob ustawiony jako niedostepny.\n";
-                } else {
+                } 
+                else {
                     cout << "Nieprawidlowy wybor.\n";
                 }
-            }
             break;
-
         default:
             cout << "Nieprawidlowa opcja.\n";
-            break;
+        break;
     }
 }
 
