@@ -342,6 +342,7 @@ void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
             double newPrice;
             cout << "Podaj nowa cene za godzine > ";    cin >> newPrice;
                 if(newPrice >= 0){
+                    // Przypisanie nowej ceny 
                     target->setPricePerSlot(newPrice);
                     cout << "Cena zostala zmieniona.\n";
                 } 
@@ -353,10 +354,12 @@ void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
             char statusChoice;
             cout << "Ustaw status [D]ostepny / [N]iedostepny > ";   cin >> statusChoice;
                 if(statusChoice == 'D' || statusChoice == 'd'){
+                    // Przypisanie statusu dostepne
                     target->setIsActive(true);
                     cout << "Zasob ustawiony jako dostepny.\n";
                 } 
                 else if(statusChoice == 'N' || statusChoice == 'n'){
+                    // Przypisanie statusu niedostepne
                     target->setIsActive(false);
                     cout << "Zasob ustawiony jako niedostepny.\n";
                 } 
@@ -441,19 +444,20 @@ void bookingSchedule(const vector<Reservation>& reservations, const vector<Resou
         << "               Harmonogtam Rezerwacji             \n"
         << "==================================================\n\n";
     for(const auto& res : reservations){
+        // Wyswitelenie wszystkich rezerwacji z statusuem PEDING
         if(reservationStatusToString(res.getStatus()) == "PENDING"){
             numberOfReservations++;
             const Resource* resource = findResourceById(resources, res.getResourceId());
             cout << string(50, '-') << "\n\n";
-            cout << "   Pozycja rezerwacji: " << numberOfReservations << "\n";
-            cout << "   ID rezerwacji: " << res.getId() << "\n";
-            cout << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n";
-            cout << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n";
-            cout << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n";
-            cout << "   Miejsce: " << res.getReservedSeats() << "\n";
-            cout << "   Status: " << reservationStatusToString(res.getStatus()) << "\n";
-            cout << "   Cena: " << res.getTotalPrice() << "\n";
-            cout << string(50, '-') << "\n\n";
+                 << "   Pozycja rezerwacji: " << numberOfReservations << "\n" <<
+                 << "   ID rezerwacji: " << res.getId() << "\n" 
+                 << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
+                 << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n"
+                 << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n"
+                 << "   Miejsce: " << res.getReservedSeats() << "\n"
+                 << "   Status: " << reservationStatusToString(res.getStatus()) << "\n"
+                 << "   Cena: " << res.getTotalPrice() << "\n";
+                 << string(50, '-') << "\n\n";
         }
         if(numberOfReservations == 0){
             cout << "Nie ma zadnej rezerwacji \n";
@@ -561,7 +565,7 @@ string formatTimestamp(time_t timestamp) {
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", timeInfo);
     return string(buffer);
 }
-
+// AI
 string reservationStatusToString(ReservationStatus status) {
     switch(status) {
         case ReservationStatus::PENDING: return "PENDING";
