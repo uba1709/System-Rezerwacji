@@ -206,7 +206,8 @@ void adminPanel(const User &admin, const Resource &res){
     cout << "   [4] Zmien nazwe zasobu\n\n";
 
     cout << "   --- PRZEGLĄD SYSTEMU Podczas robienia! ---\n";
-    cout << "   [5] Pełny harmonogram rezerwacji (Wszystkie)\n\n";
+    cout << "   [5] Pełny harmonogram rezerwacji (Wszystkie)\n";
+    cout << "   [6] Wszyscy uzytkownicy\n\n";
 
     cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
     cout << "==================================================\n";
@@ -373,13 +374,16 @@ void changePriceAndStatus(vector<Resource>& resources, bool isActive = false){
     }
 }
 
+// Funkcja zmiany nazwy zasobu
 void changeNameInResources(vector<Resource>& resources,  bool isActive = false){
     int choiceIDToChangeName;
     cout << "Podaj id do zmiany nazwy > ";
     cin >> choiceIDToChangeName;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
+    // Stworzenie ptr
     Resource* target = nullptr;
+    // Pentla z if czy ID zasobu jest taki sam jak podany przez uzytkownika
     for(auto& res : resources){
         if(static_cast<int>(res.getIdResource()) == choiceIDToChangeName){
             if(isActive && !res.getIsActive())
@@ -389,6 +393,7 @@ void changeNameInResources(vector<Resource>& resources,  bool isActive = false){
         }
     }
 
+    // Jesli nie ma takiego ID powrot do menu
     if(!target){
         clearScreen();
         cout << "Nie ma takiego ID jak: " << choiceIDToChangeName << '\n';
@@ -409,6 +414,7 @@ void changeNameInResources(vector<Resource>& resources,  bool isActive = false){
          << "status\n";
     cout << string(78, '-') << "\n";
 
+    // Wyswitelenie wszystkich danych o podanym zasobie z ID
     string capStr = to_string(target->getCapacity()) + " os.";
     cout << left    
          << setw(7)  << target->getIdResource()
@@ -418,13 +424,15 @@ void changeNameInResources(vector<Resource>& resources,  bool isActive = false){
          << (target->getIsActive() ? "[Dostepny]" : "Niedostepny") << "\n";
     cout << string(78, '+');
 
+    // Podanie nowej nazwy
     string newName;
     cout << "\nPodaj nowa nazwe zasobu > ";
-    getline(cin, newName);
+    getline(cin, newName); // String z spacją
     if(newName.empty()){
         cout << "Nazwa nie moze byc pusta.\n";
         return;
     }
+    // Podmiana nazwy
     target->setNewName(newName);
 
     clearScreen();
@@ -432,6 +440,37 @@ void changeNameInResources(vector<Resource>& resources,  bool isActive = false){
     return;   
 }
 
+void displayUsers(vector<User>& users){
+    clearScreen();
+    cout << "==================================================\n"
+         << "                   Uzytkownicy                    \n"
+         << "==================================================\n\n";
+    if(users.empty()){
+        cout << "Nie ma zadnego uzytwkonika\n";
+        return;
+    }
+
+    cout << left    
+         << setw(7)  << "ID"
+         << setw(20) << "Imie i Nazwisko"
+         << setw(14) << "Number"
+         << setw(15) << "Przypisana Rola\n";
+    cout << string(58, '=') << "\n\n";
+
+    for(auto& usr : users){
+        cout << string(58, '-') << "\n\n";
+        cout << left    
+             << setw(7)  << usr.getIdUser()
+             << setw(20) << usr.getFullNameUser()
+             << setw(14) << usr.getPhoneNumberUser()
+             << setw(15) << (usr.getRole() == Role::ADMIN ? "   ADMIN" : "  CLIENT") << "\n\n";
+        cout << string(58, '-') << "\n\n";
+    }
+
+    cout << "Nacisnij enter aby wyjsc" << endl;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
+}
 
 string formatTimestamp(time_t timestamp);
 string reservationStatusToString(ReservationStatus status);
@@ -443,22 +482,24 @@ void bookingSchedule(const vector<Reservation>& reservations, const vector<Resou
     cout << "==================================================\n"
         << "               Harmonogtam Rezerwacji             \n"
         << "==================================================\n\n";
+    // Pentla do wyswietlenie wszystkich rezerwacji z statusem PEDING
     for(const auto& res : reservations){
         // Wyswitelenie wszystkich rezerwacji z statusuem PEDING
         if(reservationStatusToString(res.getStatus()) == "PENDING"){
             numberOfReservations++;
             const Resource* resource = findResourceById(resources, res.getResourceId());
-            cout << string(50, '-') << "\n\n";
-                 << "   Pozycja rezerwacji: " << numberOfReservations << "\n" <<
-                 << "   ID rezerwacji: " << res.getId() << "\n" 
+              cout << string(50, '-') << "\n\n"
+                  << "   Pozycja rezerwacji: " << numberOfReservations << "\n"
+                  << "   ID rezerwacji: " << res.getId() << "\n"
                  << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
                  << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n"
                  << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n"
                  << "   Miejsce: " << res.getReservedSeats() << "\n"
                  << "   Status: " << reservationStatusToString(res.getStatus()) << "\n"
-                 << "   Cena: " << res.getTotalPrice() << "\n";
-                 << string(50, '-') << "\n\n";
+                  << "   Cena: " << res.getTotalPrice() << "\n"
+                  << string(50, '-') << "\n\n";
         }
+        // Sprawdzenie jeśli nie ma zasobu
         if(numberOfReservations == 0){
             cout << "Nie ma zadnej rezerwacji \n";
             cout << string(50, '=') << "\n\n";
@@ -467,8 +508,10 @@ void bookingSchedule(const vector<Reservation>& reservations, const vector<Resou
     }
 }
 
-//Funkcje Klienta
+// Funkcje Klienta
+// Panel klienta
 void clientPanel(const User &client, const Resource &res){
+    // Wyświetlenie mozliwych opcji dla klienta
     cout << "==================================================\n"
          << "   PANEL KLIENTA | Zalogowany: " << client.getFullNameUser() << " | ID: " << client.getIdUser() << '\n'
          << "==================================================" << "\n\n";
@@ -486,8 +529,10 @@ void clientPanel(const User &client, const Resource &res){
 
 }
 
+// Wybor pocji klienta do clientPanel
 int clientChoiceLog(){
     int clientChoiceUser;
+    // Pentla czy klient wybral dobra opcje w zakresie 0 - 4
     while (true) {
         cout << "wybierz opcje > ";
         if (cin >> clientChoiceUser && clientChoiceUser >= 0 && clientChoiceUser <= 4) return clientChoiceUser;
@@ -498,11 +543,13 @@ int clientChoiceLog(){
     }
 }
 
-void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive = false){
+// Wyswietlenie wszywkich zasobow 
+void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive = false){ 
     cout << "==============================================================================\n"
          << "                           LISTA ZASOBOW I CENNIK                             \n"
          << "==============================================================================\n";
 
+    // Komunikat o braku zasobow
     if(resources.empty()){
         cout << "  Brak zarejestrowanych zasobów w systemie.\n";
         cout << "==============================================================================\n";
@@ -517,13 +564,12 @@ void displayResourcesAndPricing(const vector<Resource>& resources, bool isActive
         << "Status" << "\n";  
 
     cout << string(78, '-') << "\n";
+    // Pentla z sprawdzeniem czy dany zasob jest dostepny
     for(const auto& res : resources){
         if(isActive && !res.getIsActive())
             continue;
-        
-    
-
         string capStr = to_string(res.getCapacity()) + " os.";
+        // Wyswietlenie wszystkich danych
         cout << left
             <<setw(7)  << res.getIdResource()
             <<setw(30) << res.getNameResource()
@@ -586,6 +632,7 @@ const Resource* findResourceById(const vector<Resource>& resources, unsigned int
     return nullptr;
 }
 
+// Wyswietlenie rezerwacji uzytkownika
 void displayUserReservations(const vector<Reservation>& reservations, const vector<Resource>& resources, unsigned int userId) {
     clearScreen();
     cout << "==================================================\n"
@@ -593,41 +640,39 @@ void displayUserReservations(const vector<Reservation>& reservations, const vect
          << "==================================================\n";
 
     bool hasReservation = false;
+    // Pentla wraz z sprawdzeniem czy ID uzytkownika jest taki sam jak ID przy rezerwacji
     for(const auto& res : reservations){
-        if(res.getUserId() != userId) continue;
-        if(reservationStatusToString(res.getStatus()) == "PENDING"){
+        // Dodatkowe sprawdzenie czy status jest PENDING
+        if(res.getUserId() != userId && reservationStatusToString(res.getStatus()) == "PENDING") continue;
             hasReservation = true;
             const Resource* resource = findResourceById(resources, res.getResourceId());
+            // Wyswietlenie wszystkich danych o rezerwacji
             cout << "   ID rezerwacji: " << res.getId() << "\n"
-                << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
-                << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n"
-                << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n"
-                << "   Miejsce: " << res.getReservedSeats() << "\n"
-                << "   Status: " << reservationStatusToString(res.getStatus()) << "\n" 
-                << "   Cena: " << res.getTotalPrice() <<  "\n" 
-                << "--------------------------------------------------\n";
-        }
+                 << "   Zasob: " << (resource ? resource->getNameResource() : string("Nieznany")) << "\n"
+                 << "   Data pocz.: " << formatTimestamp(res.getStartTimestamp()) << "\n"
+                 << "   Data zak.: " << formatTimestamp(res.getEndTimestamp()) << "\n"
+                 << "   Miejsce: " << res.getReservedSeats() << "\n"
+                 << "   Status: " << reservationStatusToString(res.getStatus()) << "\n" 
+                 << "   Cena: " << res.getTotalPrice() <<  "\n" 
+                 << "--------------------------------------------------\n";
     }
+    // Komunkat gdyby nie bylo zadnej rezerwacji
     if(!hasReservation){
         cout << "Brak aktywnych rezerwacji dla Twojego konta.\n";
-         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Nacisnij Enter, aby kontynuowac";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin.get();
     }
-
-    
-    cout << "Nacisnij Enter, aby kontynuowac...";
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    cin.get();
 }
 
+// Tworzenie nowej rezerwacji
 void newReservation(const User& user, const vector<Resource>& resources, vector<Reservation>& reservations){
-    unsigned int resID;
+    unsigned int resID; 
     cout << "==================================================\n"
          << "           TWORZENIE NOWEJ REZERWACJI             \n"
          << "==================================================\n";
     
-    cout << "Podaj id > ";
-    cin >> resID;
+    cout << "Podaj id > ";  cin >> resID;
     clearScreen();
     cout << string(78, '-') << "\n";
     const Resource* targetResource  = nullptr;
@@ -791,36 +836,40 @@ int main(){
                 int adminChoice =  adminChoiceLog();
                 if(adminChoice == 0)    break;
                 switch (adminChoice){
-                case 1:
-                    int backToAdminPanel;
-                    clearScreen();
-                    displayResourcesAndPricing(resources, false);
-                    cout << "[0] Powrot > "; cin >> backToAdminPanel;
-                    if(backToAdminPanel == 0){
-                        adminPanel(users[0], resources[0]);
-                    }
-                    break;
-                case 2:
-                    addNewResourcesAndPricing(resources);
-                    break;
-                case 3:
-                    clearScreen();
-                    displayResourcesAndPricing(resources, false);
-                    changePriceAndStatus(resources, false);
-                    break;
-                case 4:
-                    clearScreen();
-                    displayResourcesAndPricing(resources, false);
-                    changeNameInResources(resources, false);
-                    break;
-               
-                case 5:
-                    clearScreen();
-                    bookingSchedule(reservations, resources);
-                    cout << "[0] Powrot > "; cin >> backToAdminPanel;
-                    if(backToAdminPanel == 0){
-                        adminPanel(users[0], resources[0]);
-                    }
+                    case 1:
+                        int backToAdminPanel;
+                        clearScreen();
+                        displayResourcesAndPricing(resources, false);
+                        cout << "[0] Powrot > "; cin >> backToAdminPanel;
+                        if(backToAdminPanel == 0){
+                            adminPanel(users[0], resources[0]);
+                        }
+                        break;
+                    case 2:
+                        addNewResourcesAndPricing(resources);
+                        break;
+                    case 3:
+                        clearScreen();
+                        displayResourcesAndPricing(resources, false);
+                        changePriceAndStatus(resources, false);
+                        break;
+                    case 4:
+                        clearScreen();
+                        displayResourcesAndPricing(resources, false);
+                        changeNameInResources(resources, false);
+                        break;
+                
+                    case 5:
+                        clearScreen();
+                        bookingSchedule(reservations, resources);
+                        cout << "[0] Powrot > "; cin >> backToAdminPanel;
+                        if(backToAdminPanel == 0){
+                            adminPanel(users[0], resources[0]);
+                        }
+                        break;
+                    case 6: 
+                        clearScreen();
+                        displayUsers(users);
                     break;
                 }
             }
