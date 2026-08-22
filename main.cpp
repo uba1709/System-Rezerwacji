@@ -200,13 +200,13 @@ void adminPanel(const User &admin, const Resource &res){
          << "==================================================" << "\n\n";
 
     cout << "   --- ZARZĄDZANIE ZASOBAMI ---\n";
-    cout << "   [1] Lista wszystkich zasobów\n";
-    cout << "   [2] Dodaj nowy zasób\n";
-    cout << "   [3] Zmień cenę / dostępność zasobu\n";
+    cout << "   [1] Lista wszystkich zasobow\n";
+    cout << "   [2] Dodaj nowy zasob\n";
+    cout << "   [3] Zmien cenę / dostepnosc zasobu\n";
     cout << "   [4] Zmien nazwe zasobu\n\n";
 
-    cout << "   --- PRZEGLĄD SYSTEMU Podczas robienia! ---\n";
-    cout << "   [5] Pełny harmonogram rezerwacji (Wszystkie)\n";
+    cout << "   --- PRZEGLAD SYSTEMU Podczas robienia! ---\n";
+    cout << "   [5] Pelny harmonogram rezerwacji (Wszystkie)\n";
     cout << "   [6] Wszyscy uzytkownicy\n\n";
 
     cout << "   [0] Wyloguj / Powrot do ekranu startowego\n\n";
